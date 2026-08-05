@@ -1,9 +1,21 @@
 import os
+import psycopg2
+from sqlalchemy import create_engine
+from sqlalchemy.pool import NullPool
 
-print("=== ENVIRONMENT VARIABLES ===")
 
-for key in sorted(os.environ.keys()):
-    if "PG" in key or "DB" in key or "LAKE" in key:
-        print(key, "=", os.environ[key])
+def get_connection():
+    return psycopg2.connect(
+        host=os.environ["PGHOST"],
+        port=os.environ["PGPORT"],
+        database=os.environ["PGDATABASE"],
+        user=os.environ["PGUSER"],
+        sslmode=os.environ["PGSSLMODE"],
+    )
 
-raise Exception("Stopped for environment check")
+
+engine = create_engine(
+    "postgresql+psycopg2://",
+    creator=get_connection,
+    poolclass=NullPool,
+)
