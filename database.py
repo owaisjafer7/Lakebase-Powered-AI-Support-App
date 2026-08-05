@@ -1,18 +1,19 @@
 import os
 from sqlalchemy import create_engine
+from databricks.sdk import WorkspaceClient
 
+client = WorkspaceClient()
 
-DB_HOST = os.environ["DB_HOST"]
-DB_PORT = os.environ["DB_PORT"]
-DB_NAME = os.environ["DB_NAME"]
-DB_USER = os.environ["DB_USER"]
-DB_PASSWORD = os.environ["DB_PASSWORD"]
-
-
-DATABASE_URL = (
-    f"postgresql://{DB_USER}:{DB_PASSWORD}"
-    f"@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+credential = client.database.generate_database_credential(
+    endpoint=os.environ["PGHOST"]
 )
 
+DATABASE_URL = (
+    f"postgresql://{os.environ['PGUSER']}:"
+    f"{credential.token}@"
+    f"{os.environ['PGHOST']}:"
+    f"{os.environ['PGPORT']}/"
+    f"{os.environ['PGDATABASE']}?sslmode=require"
+)
 
 engine = create_engine(DATABASE_URL)
