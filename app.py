@@ -1,9 +1,28 @@
-import os
-from sqlalchemy import create_engine
+import streamlit as st
+import pandas as pd
+from sqlalchemy import text
+from database import engine
 
-DATABASE_URL = os.environ.get("DATABASE_URL")
+st.title("Support Ticket System")
 
-if not DATABASE_URL:
-    raise Exception("DATABASE_URL is missing")
+st.write("Lakebase-powered AI Support App")
 
-engine = create_engine(DATABASE_URL)
+# View tickets
+st.header("Support Tickets")
+
+with engine.connect() as conn:
+    tickets = pd.read_sql(
+        text("""
+            SELECT 
+                ticket_id,
+                ticket_title,
+                ticket_status,
+                ticket_created_by,
+                ticket_created_at
+            FROM tickets
+            ORDER BY ticket_created_at DESC
+        """),
+        conn
+    )
+
+st.dataframe(tickets)
