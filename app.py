@@ -5,7 +5,7 @@ from database import engine
 
 st.title("🎫 Support Ticket System")
 
-st.write("Loading tickets from Lakebase...")
+st.write("Connecting to Lakebase...")
 
 try:
     with engine.connect() as conn:
@@ -23,9 +23,11 @@ try:
             conn
         )
 
-    st.subheader("All Tickets")
+    st.success("Connected to Lakebase!")
+    
+    st.subheader("Tickets")
     st.dataframe(tickets)
 
 except Exception as e:
-    st.error("Could not load tickets")
-    st.write(e)
+    st.error("Could not connect to Lakebase")
+    st.exception(e)
