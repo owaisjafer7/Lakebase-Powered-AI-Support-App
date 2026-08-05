@@ -1,18 +1,9 @@
 import os
-from sqlalchemy import create_engine
 
-host = os.environ["PGHOST"]
-port = os.environ["PGPORT"]
-database = os.environ["PGDATABASE"]
-user = os.environ["PGUSER"]
+print("=== ENVIRONMENT VARIABLES ===")
 
+for key in sorted(os.environ.keys()):
+    if "PG" in key or "DB" in key or "LAKE" in key:
+        print(key, "=", os.environ[key])
 
-with open("/var/run/secrets/lakebase/password", "r") as f:
-    password = f.read().strip()
-
-DATABASE_URL = (
-    f"postgresql://{user}:{password}@"
-    f"{host}:{port}/{database}?sslmode=require"
-)
-
-engine = create_engine(DATABASE_URL)
+raise Exception("Stopped for environment check")
