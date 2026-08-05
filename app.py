@@ -1,19 +1,9 @@
-from databricks.sdk import WorkspaceClient
-from sqlalchemy import create_engine
 import os
+from sqlalchemy import create_engine
 
-w = WorkspaceClient()
+DATABASE_URL = os.environ.get("DATABASE_URL")
 
-connection = w.database.get_database_credential(
-    database_instance_name="databricks_postgres"
-)
-
-DATABASE_URL = (
-    f"postgresql://{connection.username}:"
-    f"{connection.password}@"
-    f"{os.environ['PGHOST']}:"
-    f"{os.environ['PGPORT']}/"
-    f"{os.environ['PGDATABASE']}"
-)
+if not DATABASE_URL:
+    raise Exception("DATABASE_URL is missing")
 
 engine = create_engine(DATABASE_URL)
