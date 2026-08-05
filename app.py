@@ -6,6 +6,7 @@ from sqlalchemy import text
 st.set_page_config(page_title="Support Ticket System")
 
 st.title("🎫 Support Ticket System")
+st.success("Connected to Lakebase PostgreSQL")
 
 # Create table if it does not exist
 with engine.begin() as conn:
