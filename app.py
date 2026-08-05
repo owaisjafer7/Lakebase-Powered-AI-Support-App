@@ -97,3 +97,78 @@ if st.button("View Messages"):
         )
 
     st.dataframe(messages, use_container_width=True)
+
+st.subheader("Add Message")
+
+message_ticket_id = st.number_input(
+    "Ticket ID",
+    min_value=1,
+    step=1
+)
+
+message_text = st.text_area("Message")
+
+author = st.text_input("Author")
+
+
+if st.button("Add Message"):
+
+    with engine.begin() as conn:
+        conn.execute(
+            text("""
+            INSERT INTO ticket_messages
+            (
+                ticket_id,
+                ticket_message_text,
+                ticket_author
+            )
+            VALUES
+            (
+                :ticket_id,
+                :message,
+                :author
+            )
+            """),
+            {
+                "ticket_id": message_ticket_id,
+                "message": message_text,
+                "author": author
+            }
+        )
+
+    st.success("Message added!")
+
+st.subheader("Update Ticket Status")
+
+update_ticket_id = st.number_input(
+    "Ticket ID to update",
+    min_value=1,
+    step=1
+)
+
+new_status = st.selectbox(
+    "New Status",
+    [
+        "Open",
+        "In progress",
+        "Resolved"
+    ]
+)
+
+
+if st.button("Update Status"):
+
+    with engine.begin() as conn:
+        conn.execute(
+            text("""
+            UPDATE tickets
+            SET ticket_status = :status
+            WHERE ticket_id = :id
+            """),
+            {
+                "status": new_status,
+                "id": update_ticket_id
+            }
+        )
+
+    st.success("Status updated!")
