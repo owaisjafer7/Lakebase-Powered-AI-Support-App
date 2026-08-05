@@ -1,21 +1,9 @@
 import os
-import psycopg2
 from sqlalchemy import create_engine
-from sqlalchemy.pool import NullPool
 
+if "database" not in os.environ:
+    raise Exception("database resource is not available")
 
-def get_connection():
-    return psycopg2.connect(
-        host=os.environ["PGHOST"],
-        port=os.environ["PGPORT"],
-        database=os.environ["PGDATABASE"],
-        user=os.environ["PGUSER"],
-        sslmode=os.environ["PGSSLMODE"],
-    )
+DATABASE_URL = os.environ["database"]
 
-
-engine = create_engine(
-    "postgresql+psycopg2://",
-    creator=get_connection,
-    poolclass=NullPool
-)
+engine = create_engine(DATABASE_URL)
