@@ -1,11 +1,9 @@
-import os
+from databricks_lakebase import Connection
 from sqlalchemy import create_engine
 
-DATABASE_URL = (
-    f"postgresql://{os.environ['PGUSER']}@"
-    f"{os.environ['PGHOST']}:"
-    f"{os.environ['PGPORT']}/"
-    f"{os.environ['PGDATABASE']}?sslmode=require"
-)
+connection = Connection()
 
-engine = create_engine(DATABASE_URL)
+engine = create_engine(
+    "postgresql+psycopg2://",
+    creator=connection.get_connection
+)
