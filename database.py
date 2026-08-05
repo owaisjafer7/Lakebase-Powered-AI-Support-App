@@ -1,21 +1,10 @@
 import os
-import psycopg2
-from sqlalchemy import create_engine
-from sqlalchemy.pool import NullPool
+import streamlit as st
 
+st.title("Environment Check")
 
-def get_connection():
-    return psycopg2.connect(
-        host=os.environ["PGHOST"],
-        port=os.environ["PGPORT"],
-        database=os.environ["PGDATABASE"],
-        user=os.environ["PGUSER"],
-        sslmode=os.environ["PGSSLMODE"],
-    )
+for key in sorted(os.environ.keys()):
+    if "PG" in key or "DB" in key or "DATABASE" in key:
+        st.write(key)
 
-
-engine = create_engine(
-    "postgresql+psycopg2://",
-    creator=get_connection,
-    poolclass=NullPool,
-)
+raise Exception("stop")
