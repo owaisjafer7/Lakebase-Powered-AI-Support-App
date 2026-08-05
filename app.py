@@ -9,8 +9,11 @@ st.title("🎫 Support Ticket System")
 
 st.success("Connected to Lakebase PostgreSQL")
 
-# Show tickets
-st.subheader("Tickets")
+
+# -----------------------------
+# View Tickets
+# -----------------------------
+st.subheader("📋 All Tickets")
 
 with engine.connect() as conn:
     tickets = pd.read_sql(
@@ -22,128 +25,173 @@ with engine.connect() as conn:
         conn
     )
 
-st.dataframe(tickets, use_container_width=True)
+st.dataframe(
+    tickets,
+    use_container_width=True
+)
 
 
-# Create ticket
-st.subheader("Create New Ticket")
+# -----------------------------
+# Create Ticket
+# -----------------------------
+st.subheader("➕ Create New Ticket")
 
-title = st.text_input("Ticket Title")
+ticket_title = st.text_input("Ticket Title")
 created_by = st.text_input("Created By")
 
-status = st.selectbox(
+ticket_status = st.selectbox(
     "Status",
     [
         "Open",
         "In progress",
         "Resolved"
-    ]
+    ],
+    key="create_ticket_status"
 )
+
 
 if st.button("Create Ticket"):
 
-    with engine.begin() as conn:
-        conn.execute(
-            text(
-                """
-                INSERT INTO tickets
-                (
-                    ticket_title,
-                    ticket_status,
-                    ticket_created_by
-                )
-                VALUES
-                (
-                    :title,
-                    :status,
-                    :created_by
-                )
-                """
-            ),
-            {
-                "title": title,
-                "status": status,
-                "created_by": created_by
-            }
-        )
+    if ticket_title and created_by:
 
-    st.success("Ticket created successfully!")
-    st.rerun()
+        with engine.begin() as conn:
+            conn.execute(
+                text("""
+                    INSERT INTO tickets
+                    (
+                        ticket_title,
+                        ticket_status,
+                        ticket_created_by
+                    )
+                    VALUES
+                    (
+                        :title,
+                        :status,
+                        :created_by
+                    )
+                """),
+                {
+                    "title": ticket_title,
+                    "status": ticket_status,
+                    "created_by": created_by
+                }
+            )
+
+        st.success("Ticket created successfully!")
+        st.rerun()
+
+    else:
+        st.warning("Please enter a title and creator.")
 
 
-# Ticket messages
-st.subheader("Ticket Messages")
 
-ticket_id = st.number_input(
+# -----------------------------
+# View Ticket Messages
+# -----------------------------
+st.subheader("💬 View Ticket Messages")
+
+view_ticket_id = st.number_input(
     "Ticket ID",
     min_value=1,
-    step=1
+    step=1,
+    key="view_messages_id"
 )
+
 
 if st.button("View Messages"):
 
     with engine.connect() as conn:
+
         messages = pd.read_sql(
-            text(
-                """
+            text("""
                 SELECT *
                 FROM ticket_messages
                 WHERE ticket_id = :id
                 ORDER BY ticket_message_id
-                """
-            ),
+            """),
             conn,
-            params={"id": ticket_id}
+            params={
+                "id": view_ticket_id
+            }
         )
 
-    st.dataframe(messages, use_container_width=True)
+    if len(messages) > 0:
+        st.dataframe(
+            messages,
+            use_container_width=True
+        )
+    else:
+        st.info("No messages found for this ticket.")
 
-st.subheader("Add Message")
+
+
+# -----------------------------
+# Add Message
+# -----------------------------
+st.subheader("✉️ Add Message")
 
 message_ticket_id = st.number_input(
-    "Ticket ID",
+    "Ticket ID for Message",
     min_value=1,
-    step=1
+    step=1,
+    key="add_message_id"
 )
 
-message_text = st.text_area("Message")
+message_text = st.text_area(
+    "Message"
+)
 
-author = st.text_input("Author")
+message_author = st.text_input(
+    "Author"
+)
 
 
 if st.button("Add Message"):
 
-    with engine.begin() as conn:
-        conn.execute(
-            text("""
-            INSERT INTO ticket_messages
-            (
-                ticket_id,
-                ticket_message_text,
-                ticket_author
-            )
-            VALUES
-            (
-                :ticket_id,
-                :message,
-                :author
-            )
-            """),
-            {
-                "ticket_id": message_ticket_id,
-                "message": message_text,
-                "author": author
-            }
-        )
+    if message_text and message_author:
 
-    st.success("Message added!")
+        with engine.begin() as conn:
 
-st.subheader("Update Ticket Status")
+            conn.execute(
+                text("""
+                    INSERT INTO ticket_messages
+                    (
+                        ticket_id,
+                        ticket_message_text,
+                        ticket_author
+                    )
+                    VALUES
+                    (
+                        :ticket_id,
+                        :message,
+                        :author
+                    )
+                """),
+                {
+                    "ticket_id": message_ticket_id,
+                    "message": message_text,
+                    "author": message_author
+                }
+            )
+
+        st.success("Message added successfully!")
+        st.rerun()
+
+    else:
+        st.warning("Please enter message and author.")
+
+
+
+# -----------------------------
+# Update Ticket Status
+# -----------------------------
+st.subheader("🔄 Update Ticket Status")
 
 update_ticket_id = st.number_input(
-    "Ticket ID to update",
+    "Ticket ID to Update",
     min_value=1,
-    step=1
+    step=1,
+    key="update_status_id"
 )
 
 new_status = st.selectbox(
@@ -152,18 +200,20 @@ new_status = st.selectbox(
         "Open",
         "In progress",
         "Resolved"
-    ]
+    ],
+    key="update_status_select"
 )
 
 
 if st.button("Update Status"):
 
     with engine.begin() as conn:
+
         conn.execute(
             text("""
-            UPDATE tickets
-            SET ticket_status = :status
-            WHERE ticket_id = :id
+                UPDATE tickets
+                SET ticket_status = :status
+                WHERE ticket_id = :id
             """),
             {
                 "status": new_status,
@@ -171,4 +221,5 @@ if st.button("Update Status"):
             }
         )
 
-    st.success("Status updated!")
+    st.success("Ticket status updated!")
+    st.rerun()
