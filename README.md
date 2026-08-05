@@ -1,124 +1,217 @@
-Make a Ticketing System
-Submission
-allowed file types: .zip
+Lakebase-Powered AI Support App Documentation
+Project Overview
 
-Allowed file types: .zip, .png, .jpg, .jpeg, .pdf
-Need Help?
-Deadline: None
-Instructions
-Day 1 Homework: Build a Lakebase-Powered AI Support App
-Objective
-Build and deploy a small Databricks App backed by Lakebase. Your app will become the foundation for the context-engineering and AI-agent projects later in the boot camp.
+This project is an internal support ticket management application built using Databricks Apps, Streamlit, and Lakebase PostgreSQL.
 
-Scenario
-You are building an internal support system where users can create support tickets and add messages to those tickets.
+The application allows support users to:
 
-Your application must store its operational data in Lakebase.
+View existing support tickets
+Create new tickets
+View messages associated with tickets
+Add messages to tickets
+Update ticket status
+Track ticket statistics
 
-Requirements
-1. Create the Lakebase schema
-Create at least these two related tables:
+All application data is stored and retrieved from Lakebase. No ticket information is hard-coded into the application.
+
+Architecture Overview
+
+The application contains three main components:
+
+1. Streamlit Application (app.py)
+
+The user interface is built using Streamlit.
+
+Responsibilities:
+
+Display tickets
+Collect user input
+Submit database changes
+Display ticket messages
+Show ticket statistics
+
+The app communicates with Lakebase through SQL queries using SQLAlchemy and psycopg2.
+
+2. Database Connection (database.py)
+
+The database connection layer handles communication between the Streamlit application and Lakebase PostgreSQL.
+
+Responsibilities:
+
+Create the database engine
+Authenticate securely
+Provide connections for queries
+
+Database credentials are not stored in the source code.
+
+3. Lakebase PostgreSQL Database
+
+Lakebase stores the operational data for the application.
+
+The database contains two related tables:
 
 tickets
 
-ticket_id
+Stores the main ticket information.
 
-title
+Columns:
 
-status
-
-created_by
-
-created_at
-
+Column	Description
+ticket_id	Unique ticket identifier
+ticket_title	Ticket subject
+ticket_status	Current ticket status
+ticket_created_by	Person who created the ticket
+ticket_created_at	Creation timestamp
+ticket_priority	Ticket importance level
 ticket_messages
 
-message_id
+Stores conversations attached to tickets.
+
+Columns:
+
+Column	Description
+ticket_message_id	Unique message identifier
+ticket_id	Related ticket
+ticket_message_text	Message content
+ticket_author	Person who wrote message
+ticket_created_at	Message timestamp
+
+Relationship:
+
+tickets.ticket_id
+        |
+        |
+ticket_messages.ticket_id
+
+A single ticket can contain multiple messages.
+
+Database Design
+
+The database was designed around a one-to-many relationship.
+
+Example:
+
+Ticket:
+
+Ticket #1
+Login failed
+Status: Open
+Created by: Owais
+
+Messages:
+
+Message 1:
+"I cannot log into my account."
+
+Message 2:
+"We are looking into the issue."
+
+This design allows multiple support conversations to belong to one ticket.
+
+Features Implemented
+Ticket Management
+
+Users can:
+
+✅ View all tickets
+✅ Create new tickets
+✅ Update ticket status
+✅ Assign ticket priority
+
+Message Management
+
+Users can:
+
+✅ View messages for a selected ticket
+✅ Add new messages
+✅ Track message authors and timestamps
+
+Dashboard Statistics
+
+The application displays:
+
+Total ticket count
+Open tickets
+In-progress tickets
+Resolved tickets
+
+These values are calculated dynamically from Lakebase.
+
+Deployment Process
+
+Steps completed:
+
+Created Lakebase database project
+Created PostgreSQL schema
+Added sample ticket data
+Created Databricks App
+Connected application to Lakebase
+Deployed Streamlit application
+Tested database operations
+Problems Encountered and Solutions
+Database Authentication
+Problem:
+
+The application initially failed with:
+
+fe_sendauth: no password supplied
+Cause:
+
+The app was reaching Lakebase but did not have valid database authentication.
+
+Solution:
+
+Configured the correct Lakebase password authentication and database connection settings.
+
+Incorrect Table Columns
+Problem:
+
+The app attempted to query:
+
+SELECT * FROM tickets ORDER BY id
+
+but the database used:
 
 ticket_id
+Solution:
 
-message_text
+Updated application SQL queries to match the Lakebase schema.
 
-author
+Duplicate Streamlit Widgets
+Problem:
 
-created_at
+Streamlit generated:
 
-The ticket_messages.ticket_id column must reference a ticket in the tickets table.
+DuplicateWidgetID
+Cause:
 
-You may add additional columns or tables.
+Multiple input widgets had identical structures.
 
-2. Add sample data
-Your database must contain:
+Solution:
 
-At least three support tickets
+Added unique widget keys:
 
-At least two messages for each ticket
+Example:
 
-At least two different ticket statuses, such as open, in_progress, or resolved
+key="view_ticket_messages_id"
+Security Considerations
 
-3. Build a Databricks App
-Create an app that allows a user to:
+The application does not include:
 
-View all support tickets
+Database passwords
+API keys
+Secret values
 
-Select a ticket and view its messages
+Credentials are handled through the Databricks environment instead of being stored in source code.
 
-Create a new ticket
+Reflection
 
-Add a message to an existing ticket
+The most difficult part of this project was configuring the connection between Databricks Apps and Lakebase and troubleshooting authentication issues. Lakebase differs from traditional analytics tables because it is designed for operational applications where data is continuously created, updated, and retrieved in real time. The project showed how an application can use a relational database backend to support workflows instead of only analyzing historical data. The next feature I would add is an AI support assistant that summarizes tickets and recommends responses.
 
-Update a ticket’s status
+Optional: Add an "AI Assistance" note
 
-The app must read from and write to Lakebase. Hard-coded application data does not count.
+If you are worried about using AI, I would not hide it. A professional way to describe it:
 
-4. Deploy and test the app
-Deploy the app using Databricks Apps and confirm that:
+AI tools were used as development assistance for debugging, code organization, and documentation. All application features were tested, configured, and validated against the Lakebase environment.
 
-Existing tickets load from Lakebase
-
-A new ticket can be created
-
-A message can be added
-
-A ticket’s status can be updated
-
-Changes remain after refreshing the app
-
-What to Submit
-Submit one document or form response containing:
-
-Your Databricks App URL
-
-Your source code zipped up
-
-A screenshot of the deployed application
-
-A screenshot showing the Lakebase tables and sample records
-
-A short reflection of 3–5 sentences answering:
-
-What was the most difficult part?
-
-How is Lakebase different from storing this data in a traditional analytics table?
-
-What feature would you add next?
-
-Make sure your instructor can access the submitted links.
-
-Bonus Challenges
-Earn recognition for completing one or more of these:
-
-Add ticket priority or category
-
-Add filtering by ticket status
-
-Add input validation and helpful error messages
-
-Display ticket statistics
-
-Add delete functionality with a confirmation step
-
-Improve the visual design of the application
-
-Important
-Do not submit passwords, database credentials, API keys, or secret values. Your application should access credentials through the Databricks environment or another secure configuration method.
+That is a normal engineering workflow now.
