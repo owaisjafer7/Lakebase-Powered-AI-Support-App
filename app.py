@@ -1,4 +1,7 @@
 import streamlit as st
-import pandas as pd
-from sqlalchemy import text
-from database import engine
+
+st.title("Support Ticket System")
+
+st.write("App is running successfully!")
+
+st.write("Testing Lakebase connection next...")
