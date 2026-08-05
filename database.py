@@ -1,22 +1,22 @@
 import os
+import psycopg2
 from sqlalchemy import create_engine
-from databricks.sdk import WorkspaceClient
+from sqlalchemy.pool import NullPool
 
 
-client = WorkspaceClient()
+def get_connection():
+    return psycopg2.connect(
+        host=os.environ["PGHOST"],
+        port=os.environ["PGPORT"],
+        database=os.environ["PGDATABASE"],
+        user="student",
+        password="npg_hLzj9TSYxN0H",
+        sslmode="require",
+    )
 
-credential = client.database.generate_database_credential(
-    request_id=os.environ["DATABRICKS_APP_NAME"]
+
+engine = create_engine(
+    "postgresql+psycopg2://",
+    creator=get_connection,
+    poolclass=NullPool
 )
-
-DATABASE_URL = (
-    f"postgresql://"
-    f"{os.environ['PGUSER']}:"
-    f"{credential.token}@"
-    f"{os.environ['PGHOST']}:"
-    f"{os.environ['PGPORT']}/"
-    f"{os.environ['PGDATABASE']}"
-    "?sslmode=require"
-)
-
-engine = create_engine(DATABASE_URL)
