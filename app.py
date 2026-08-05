@@ -5,59 +5,33 @@ from database import engine
 
 st.set_page_config(page_title="Support Ticket System")
 
-st.title("🎫 Support Ticket System")
+st.title("Lakebase-Powered AI Support Ticket App")
 
 st.success("Connected to Lakebase PostgreSQL")
 
-
-# -----------------------------
-# View Tickets
-# -----------------------------
-st.subheader("📋 All Tickets")
+st.subheader("All Tickets")
 
 with engine.connect() as conn:
-    tickets = pd.read_sql(
-        """
-        SELECT *
-        FROM tickets
-        ORDER BY ticket_id
-        """,
-        conn
-    )
+    tickets = pd.read_sql("""SELECT * FROM tickets ORDER BY ticket_id""",conn)
 
 st.dataframe(
     tickets,
     use_container_width=True
 )
 
-
-# -----------------------------
-# Create Ticket
-# -----------------------------
-st.subheader("➕ Create New Ticket")
+st.subheader("Create New Ticket")
 
 ticket_title = st.text_input("Ticket Title")
 created_by = st.text_input("Created By")
 
-ticket_status = st.selectbox(
-    "Status",
-    [
-        "Open",
-        "In progress",
-        "Resolved"
-    ],
-    key="create_ticket_status"
+ticket_status = st.selectbox("Status", ["Open", "In Progress", "Resolved"], key="create_ticket_status"
 )
 
-
 if st.button("Create Ticket"):
-
     if ticket_title and created_by:
-
         with engine.begin() as conn:
-            conn.execute(
-                text("""
-                    INSERT INTO tickets
+            conn.execute(text(
+                """INSERT INTO tickets
                     (
                         ticket_title,
                         ticket_status,
@@ -79,16 +53,10 @@ if st.button("Create Ticket"):
 
         st.success("Ticket created successfully!")
         st.rerun()
-
     else:
         st.warning("Please enter a title and creator.")
 
-
-
-# -----------------------------
-# View Ticket Messages
-# -----------------------------
-st.subheader("💬 View Ticket Messages")
+st.subheader("View Ticket Messages")
 
 view_ticket_id = st.number_input(
     "Ticket ID",
@@ -99,9 +67,7 @@ view_ticket_id = st.number_input(
 
 
 if st.button("View Messages"):
-
     with engine.connect() as conn:
-
         messages = pd.read_sql(
             text("""
                 SELECT *
@@ -123,12 +89,7 @@ if st.button("View Messages"):
     else:
         st.info("No messages found for this ticket.")
 
-
-
-# -----------------------------
-# Add Message
-# -----------------------------
-st.subheader("✉️ Add Message")
+st.subheader("Add Message")
 
 message_ticket_id = st.number_input(
     "Ticket ID for Message",
@@ -181,11 +142,7 @@ if st.button("Add Message"):
         st.warning("Please enter message and author.")
 
 
-
-# -----------------------------
-# Update Ticket Status
-# -----------------------------
-st.subheader("🔄 Update Ticket Status")
+st.subheader("Update Ticket Status")
 
 update_ticket_id = st.number_input(
     "Ticket ID to Update",
