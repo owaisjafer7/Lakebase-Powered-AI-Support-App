@@ -1,79 +1,99 @@
 import streamlit as st
 import pandas as pd
-from database import engine
 from sqlalchemy import text
+from database import engine
 
 st.set_page_config(page_title="Support Ticket System")
 
 st.title("🎫 Support Ticket System")
+
 st.success("Connected to Lakebase PostgreSQL")
 
-# Create table if it does not exist
-with engine.begin() as conn:
-    conn.execute(text("""
-        CREATE TABLE IF NOT EXISTS tickets (
-            id SERIAL PRIMARY KEY,
-            customer VARCHAR(100),
-            title VARCHAR(255),
-            description TEXT,
-            status VARCHAR(50),
-            priority VARCHAR(50)
-        )
-    """))
-
-# Add sample ticket once
-with engine.begin() as conn:
-    count = conn.execute(text("SELECT COUNT(*) FROM tickets")).scalar()
-
-    if count == 0:
-        conn.execute(text("""
-            INSERT INTO tickets 
-            (customer, title, description, status, priority)
-            VALUES
-            ('Alice', 'Cannot login', 'Password reset not working', 'Open', 'High'),
-            ('Bob', 'Billing issue', 'Wrong invoice amount', 'In Progress', 'Medium'),
-            ('Charlie', 'Feature request', 'Requesting dark mode', 'Closed', 'Low')
-        """))
-
-
+# Show tickets
 st.subheader("Tickets")
 
 with engine.connect() as conn:
-    df = pd.read_sql(
-        "SELECT * FROM tickets",
+    tickets = pd.read_sql(
+        """
+        SELECT *
+        FROM tickets
+        ORDER BY ticket_id
+        """,
         conn
     )
 
-st.dataframe(df, use_container_width=True)
+st.dataframe(tickets, use_container_width=True)
 
 
+# Create ticket
 st.subheader("Create New Ticket")
 
-customer = st.text_input("Customer")
-title = st.text_input("Issue Title")
-description = st.text_area("Description")
-priority = st.selectbox(
-    "Priority",
-    ["Low", "Medium", "High"]
+title = st.text_input("Ticket Title")
+created_by = st.text_input("Created By")
+
+status = st.selectbox(
+    "Status",
+    [
+        "Open",
+        "In progress",
+        "Resolved"
+    ]
 )
 
-if st.button("Submit Ticket"):
+if st.button("Create Ticket"):
 
     with engine.begin() as conn:
         conn.execute(
-            text("""
-            INSERT INTO tickets
-            (customer, title, description, status, priority)
-            VALUES
-            (:customer, :title, :description, 'Open', :priority)
-            """),
+            text(
+                """
+                INSERT INTO tickets
+                (
+                    ticket_title,
+                    ticket_status,
+                    ticket_created_by
+                )
+                VALUES
+                (
+                    :title,
+                    :status,
+                    :created_by
+                )
+                """
+            ),
             {
-                "customer": customer,
                 "title": title,
-                "description": description,
-                "priority": priority
+                "status": status,
+                "created_by": created_by
             }
         )
 
-    st.success("Ticket created!")
+    st.success("Ticket created successfully!")
     st.rerun()
+
+
+# Ticket messages
+st.subheader("Ticket Messages")
+
+ticket_id = st.number_input(
+    "Ticket ID",
+    min_value=1,
+    step=1
+)
+
+if st.button("View Messages"):
+
+    with engine.connect() as conn:
+        messages = pd.read_sql(
+            text(
+                """
+                SELECT *
+                FROM ticket_messages
+                WHERE ticket_id = :id
+                ORDER BY ticket_message_id
+                """
+            ),
+            conn,
+            params={"id": ticket_id}
+        )
+
+    st.dataframe(messages, use_container_width=True)
