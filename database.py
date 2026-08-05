@@ -1,17 +1,6 @@
 import os
 from sqlalchemy import create_engine
 
-DATABASE_URL = (
-    f"postgresql://{os.environ['PGUSER']}@"
-    f"{os.environ['PGHOST']}:"
-    f"{os.environ['PGPORT']}/"
-    f"{os.environ['PGDATABASE']}"
-    "?sslmode=require"
-)
+DATABASE_URL = os.environ["lakebase-url"]
 
-engine = create_engine(
-    DATABASE_URL,
-    connect_args={
-        "sslmode": "require"
-    }
-)
+engine = create_engine(DATABASE_URL)
