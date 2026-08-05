@@ -39,7 +39,7 @@ st.subheader("Tickets")
 
 with engine.connect() as conn:
     df = pd.read_sql(
-        "SELECT * FROM tickets ORDER BY id",
+        "SELECT * FROM tickets",
         conn
     )
 
