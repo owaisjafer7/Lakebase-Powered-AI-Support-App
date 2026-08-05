@@ -1,12 +1,18 @@
 import os
 from sqlalchemy import create_engine
-from databricks.sdk import WorkspaceClient
 
-w = WorkspaceClient()
+host = os.environ["PGHOST"]
+port = os.environ["PGPORT"]
+database = os.environ["PGDATABASE"]
+user = os.environ["PGUSER"]
 
-database = w.apps.get_app_database(
-    app_name=os.environ["DATABRICKS_APP_NAME"],
-    resource_key="database"
+
+with open("/var/run/secrets/lakebase/password", "r") as f:
+    password = f.read().strip()
+
+DATABASE_URL = (
+    f"postgresql://{user}:{password}@"
+    f"{host}:{port}/{database}?sslmode=require"
 )
 
-engine = create_engine(database.connection_string)
+engine = create_engine(DATABASE_URL)
