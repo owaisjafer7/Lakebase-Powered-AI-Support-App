@@ -1,8 +1,11 @@
 import os
+from sqlalchemy import create_engine
 
-def show_environment():
-    return [
-        key
-        for key in sorted(os.environ.keys())
-        if "PG" in key or "DB" in key or "DATABASE" in key
-    ]
+DATABASE_URL = (
+    f"postgresql://{os.environ['PGUSER']}@"
+    f"{os.environ['PGHOST']}:"
+    f"{os.environ['PGPORT']}/"
+    f"{os.environ['PGDATABASE']}?sslmode=require"
+)
+
+engine = create_engine(DATABASE_URL)
