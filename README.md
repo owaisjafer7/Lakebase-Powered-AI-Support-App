@@ -1,217 +1,290 @@
-Lakebase-Powered AI Support App Documentation
-Project Overview
+# Lakebase-Powered AI Support App
 
-This project is an internal support ticket management application built using Databricks Apps, Streamlit, and Lakebase PostgreSQL.
+## Project Overview
+
+This project is an internal support ticket management application built using **Databricks Apps**, **Streamlit**, and **Lakebase PostgreSQL**.
 
 The application allows support users to:
 
-View existing support tickets
-Create new tickets
-View messages associated with tickets
-Add messages to tickets
-Update ticket status
-Track ticket statistics
+* View existing support tickets
+* Create new tickets
+* View messages associated with tickets
+* Add messages to existing tickets
+* Update ticket status
+* Track ticket statistics
+* Assign ticket priority levels
 
-All application data is stored and retrieved from Lakebase. No ticket information is hard-coded into the application.
+All application data is stored and retrieved from Lakebase. The application does not use hard-coded ticket information.
 
-Architecture Overview
+---
 
-The application contains three main components:
+# Application Architecture
 
-1. Streamlit Application (app.py)
+The application consists of three main components:
+
+## 1. Streamlit Application (`app.py`)
 
 The user interface is built using Streamlit.
 
 Responsibilities:
 
-Display tickets
-Collect user input
-Submit database changes
-Display ticket messages
-Show ticket statistics
+* Display tickets from Lakebase
+* Collect user input
+* Create new tickets
+* Add ticket messages
+* Update ticket statuses
+* Display dashboard statistics
 
-The app communicates with Lakebase through SQL queries using SQLAlchemy and psycopg2.
+The application communicates with Lakebase PostgreSQL using SQLAlchemy and psycopg2.
 
-2. Database Connection (database.py)
+---
 
-The database connection layer handles communication between the Streamlit application and Lakebase PostgreSQL.
+## 2. Database Connection (`database.py`)
+
+The database connection layer manages communication between the application and Lakebase.
 
 Responsibilities:
 
-Create the database engine
-Authenticate securely
-Provide connections for queries
+* Create the database engine
+* Authenticate securely
+* Provide database connections
+* Execute database operations
 
-Database credentials are not stored in the source code.
+Database credentials are not stored directly in the source code.
 
-3. Lakebase PostgreSQL Database
+---
 
-Lakebase stores the operational data for the application.
+## 3. Lakebase PostgreSQL Database
+
+Lakebase stores the operational data used by the support application.
 
 The database contains two related tables:
 
-tickets
+---
 
-Stores the main ticket information.
+# Database Schema
 
-Columns:
+## `tickets` Table
 
-Column	Description
-ticket_id	Unique ticket identifier
-ticket_title	Ticket subject
-ticket_status	Current ticket status
-ticket_created_by	Person who created the ticket
-ticket_created_at	Creation timestamp
-ticket_priority	Ticket importance level
-ticket_messages
+Stores the main support ticket information.
 
-Stores conversations attached to tickets.
+| Column              | Description                    |
+| ------------------- | ------------------------------ |
+| `ticket_id`         | Unique ticket identifier       |
+| `ticket_title`      | Ticket subject/title           |
+| `ticket_status`     | Current ticket status          |
+| `ticket_created_by` | User who created the ticket    |
+| `ticket_created_at` | Ticket creation timestamp      |
+| `ticket_priority`   | Importance level of the ticket |
 
-Columns:
+---
 
-Column	Description
-ticket_message_id	Unique message identifier
-ticket_id	Related ticket
-ticket_message_text	Message content
-ticket_author	Person who wrote message
-ticket_created_at	Message timestamp
+## `ticket_messages` Table
 
-Relationship:
+Stores messages associated with support tickets.
 
+| Column                | Description                    |
+| --------------------- | ------------------------------ |
+| `ticket_message_id`   | Unique message identifier      |
+| `ticket_id`           | Related ticket identifier      |
+| `ticket_message_text` | Message content                |
+| `ticket_author`       | Person who created the message |
+| `ticket_created_at`   | Message creation timestamp     |
+
+---
+
+## Table Relationship
+
+The database uses a one-to-many relationship:
+
+```
 tickets.ticket_id
         |
         |
 ticket_messages.ticket_id
+```
 
 A single ticket can contain multiple messages.
 
-Database Design
-
-The database was designed around a one-to-many relationship.
-
 Example:
 
-Ticket:
-
+```
 Ticket #1
-Login failed
+Title: Login failed
 Status: Open
-Created by: Owais
 
 Messages:
+- User: I cannot log into my account.
+- Support: We are looking into the issue.
+```
 
-Message 1:
-"I cannot log into my account."
+---
 
-Message 2:
-"We are looking into the issue."
+# Features Implemented
 
-This design allows multiple support conversations to belong to one ticket.
-
-Features Implemented
-Ticket Management
+## Ticket Management
 
 Users can:
 
-✅ View all tickets
-✅ Create new tickets
-✅ Update ticket status
-✅ Assign ticket priority
+* View all support tickets
+* Create new tickets
+* Update ticket status
+* Assign ticket priority
 
-Message Management
+---
+
+## Message Management
 
 Users can:
 
-✅ View messages for a selected ticket
-✅ Add new messages
-✅ Track message authors and timestamps
+* View messages for a selected ticket
+* Add new messages
+* Track message authors
+* Track message timestamps
 
-Dashboard Statistics
+---
 
-The application displays:
+## Dashboard Statistics
 
-Total ticket count
-Open tickets
-In-progress tickets
-Resolved tickets
+The application dynamically displays:
 
-These values are calculated dynamically from Lakebase.
+* Total tickets
+* Open tickets
+* In Progress tickets
+* Resolved tickets
 
-Deployment Process
+These values are calculated directly from Lakebase data.
 
-Steps completed:
+---
 
-Created Lakebase database project
-Created PostgreSQL schema
-Added sample ticket data
-Created Databricks App
-Connected application to Lakebase
-Deployed Streamlit application
-Tested database operations
-Problems Encountered and Solutions
-Database Authentication
-Problem:
+# Deployment Process
+
+The following steps were completed:
+
+1. Created a Lakebase database project
+2. Created the PostgreSQL schema
+3. Added sample ticket records
+4. Added sample ticket messages
+5. Created the Databricks App
+6. Connected the application to Lakebase
+7. Deployed the Streamlit application
+8. Tested database read/write operations
+
+---
+
+# Challenges and Solutions
+
+## Lakebase Authentication
+
+### Problem
 
 The application initially failed with:
 
+```
 fe_sendauth: no password supplied
-Cause:
+```
 
-The app was reaching Lakebase but did not have valid database authentication.
+### Cause
 
-Solution:
+The application could reach the database server but did not have valid authentication credentials.
 
-Configured the correct Lakebase password authentication and database connection settings.
+### Solution
 
-Incorrect Table Columns
-Problem:
+Configured the correct Lakebase authentication method and database connection settings.
 
-The app attempted to query:
+---
 
+## Database Column Mismatch
+
+### Problem
+
+The application attempted to query columns that did not exist:
+
+```
 SELECT * FROM tickets ORDER BY id
+```
 
-but the database used:
+However, the database schema used:
 
+```
 ticket_id
-Solution:
+```
+
+### Solution
 
 Updated application SQL queries to match the Lakebase schema.
 
-Duplicate Streamlit Widgets
-Problem:
+---
 
-Streamlit generated:
+## Streamlit Duplicate Widget Error
 
+### Problem
+
+Streamlit returned:
+
+```
 DuplicateWidgetID
-Cause:
+```
 
-Multiple input widgets had identical structures.
+### Cause
 
-Solution:
+Multiple widgets had identical structures and automatically generated the same internal key.
 
-Added unique widget keys:
+### Solution
+
+Added unique keys to Streamlit widgets.
 
 Example:
 
+```python
 key="view_ticket_messages_id"
-Security Considerations
+```
 
-The application does not include:
+---
 
-Database passwords
-API keys
-Secret values
+# Security Considerations
 
-Credentials are handled through the Databricks environment instead of being stored in source code.
+The application does not contain:
 
-Reflection
+* Database passwords
+* API keys
+* Secret tokens
+* Hard-coded credentials
 
-The most difficult part of this project was configuring the connection between Databricks Apps and Lakebase and troubleshooting authentication issues. Lakebase differs from traditional analytics tables because it is designed for operational applications where data is continuously created, updated, and retrieved in real time. The project showed how an application can use a relational database backend to support workflows instead of only analyzing historical data. The next feature I would add is an AI support assistant that summarizes tickets and recommends responses.
+Database access is handled through the Databricks environment configuration.
 
-Optional: Add an "AI Assistance" note
+---
 
-If you are worried about using AI, I would not hide it. A professional way to describe it:
+# Testing Completed
 
-AI tools were used as development assistance for debugging, code organization, and documentation. All application features were tested, configured, and validated against the Lakebase environment.
+The application was tested to confirm:
 
-That is a normal engineering workflow now.
+✅ Existing tickets load from Lakebase
+✅ New tickets can be created
+✅ Messages can be added to tickets
+✅ Ticket status can be updated
+✅ Changes persist after refreshing the application
+
+---
+
+# Bonus Features Completed
+
+The following bonus challenges were implemented:
+
+✅ Ticket priority
+✅ Ticket status filtering
+✅ Input validation and error messages
+✅ Ticket statistics dashboard
+✅ Improved visual design
+
+---
+
+# Reflection
+
+The most difficult part of this project was configuring the connection between Databricks Apps and Lakebase and troubleshooting authentication issues. Lakebase differs from traditional analytics tables because it is designed for operational applications where data is continuously created, updated, and retrieved in real time. This project demonstrated how a relational database can support application workflows instead of only storing analytical data. The next feature I would add is an AI support assistant that summarizes tickets and recommends responses for support agents.
+
+---
+
+# AI Development Assistance
+
+AI tools were used as development assistance for debugging, code organization, and documentation. All application features were manually configured, tested, and validated against the Lakebase environment.
